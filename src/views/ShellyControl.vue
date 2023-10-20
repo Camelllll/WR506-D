@@ -16,24 +16,23 @@ export default {
   setup() {
     const etatPrise = ref(false);
     const temperature = ref('');
-    const on = ref(false);
 
     const controlPrise = async (action) => {
       try {
-        const myHeaders = new Headers();
-        myHeaders.append('Content-Type', 'application/json');
-
-        const formdata = new FormData();
+        const formdata = new URLSearchParams();
         formdata.append('channel', '1');
         formdata.append('turn', 'on');
         formdata.append('device_id', '80646F827174');
         formdata.append('auth_key', 'MWRmYzM2dWlkE62C6C4C76F817CE0A3D2902F5B5D4C115E49B28CF8539114D9246505DE5D368D560D06020A92480');
 
-        const response = await fetch('https://shelly-86-eu.shelly.cloud/device/relay/control', formdata, {
+        const response = await fetch('https://shelly-86-eu.shelly.cloud/device/relay/control', {
+          method: 'POST',
+          body: formdata,
           headers: {
-            'Content-Type': 'multipart/form-data'
-          }
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
         });
+
         const result = await response.text();
         console.log(result);
 
@@ -69,7 +68,7 @@ export default {
   height: 100vh;
 }
 
-.center-content {
+center-content {
   text-align: center;
 }
 
