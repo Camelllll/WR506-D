@@ -1,12 +1,17 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
+
 </script>
 
 <template>
   <header>
-      <h1>coucou</h1>
+      <h1>Voici les informations de la prise :</h1>
+      <nav>
+        <router-link to="/">Accueil</router-link>
+        <router-link to="/shelly">Prise</router-link>
+      </nav>
   </header>
 
+<RouterView />
 </template>
 
 <style scoped>
