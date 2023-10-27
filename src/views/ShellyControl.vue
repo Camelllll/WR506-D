@@ -1,31 +1,58 @@
 <template>
   <div class="container">
     <div class="center-content">
+      <img v-if="etatPrise" class="custom-image" src="src/assets/images/pikaok.png" alt="Allumée" />
+      <img v-else class="custom-image" src="src/assets/images/pikako.png" alt="Éteinte" />
       <p>État de la prise : {{ etatPrise ? 'Allumée' : 'Éteinte' }}</p>
-      <p>Température : {{ temperature }} °C</p>
       <button @click="allumerPrise" :disabled="etatPrise" class="custom-button">Allumer</button>
       <button @click="eteindrePrise" :disabled="!etatPrise" class="custom-button-2">Éteindre</button>
+      <p>Température : <span v-if="temperature">{{ temperature }}°C</span></p>
+      <p>Adresse IP : <span v-if="adresseIP">{{ adresseIP }}</span></p>
     </div>
   </div>
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 export default {
   setup() {
-    const etatPrise = ref(false);
-    const temperature = ref('');
+    const etatPrise = ref(true);
+    const temperature = ref(0); 
+    const adresseIP = ref('');
+    const puissance = ref(0);
+
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          'https://shelly-77-eu.shelly.cloud/device/status?id=4022d88e30e8&auth_key=MWNiMjY5dWlk404459961993DCA83AE44BC6E3A6F58906952E7BECA0A5B69DC375C964915ACBC0EA536A0639CB73'
+        );
+        const data = await response.json();
+
+        if (data.isok) {
+          etatPrise.value = data.data.device_status.relays[0].ison;
+          temperature.value = data.data.device_status.temperature;
+          adresseIP.value = data.data.device_status.wifi_sta.ip;
+          puissance.value = data.data.device_status.meters.timestamp;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    onMounted(() => {
+      fetchData();
+    });
 
     const controlPrise = async (action) => {
       try {
         const formdata = new URLSearchParams();
-        formdata.append('channel', '1');
+        formdata.append('channel', '0');
         formdata.append('turn', 'on');
-        formdata.append('device_id', '80646F827174');
-        formdata.append('auth_key', 'MWRmYzM2dWlkE62C6C4C76F817CE0A3D2902F5B5D4C115E49B28CF8539114D9246505DE5D368D560D06020A92480');
+        formdata.append('device_id', '4022d88e30e8');
+        formdata.append('auth_key', 'MWNiMjY5dWlk404459961993DCA83AE44BC6E3A6F58906952E7BECA0A5B69DC375C964915ACBC0EA536A0639CB73');
 
-        const response = await fetch('https://shelly-86-eu.shelly.cloud/device/relay/control', {
+        const response = await fetch('https://shelly-77-eu.shelly.cloud/device/relay/control', {
           method: 'POST',
           body: formdata,
           headers: {
@@ -53,6 +80,8 @@ export default {
     return {
       etatPrise,
       temperature,
+      adresseIP,
+      puissance,
       allumerPrise,
       eteindrePrise,
     };
@@ -72,11 +101,6 @@ center-content {
   text-align: center;
 }
 
-img {
-  width: 100px;
-  height: 100px;
-  margin: 0 auto;
-}
 
 .custom-button-2 {
   color: white;
@@ -104,9 +128,9 @@ img {
   cursor: not-allowed;
 }
 
-.custom-image {
-  max-width: 80%;
-  max-height: 800%;
-  margin-bottom: 20px;
+.custom-image{
+  width: 200px;
+  height: 200px;
 }
+
 </style>
